@@ -1,8 +1,5 @@
 <?php
-
 require_once __DIR__ . "/../includes/app.php";
-require_once __DIR__ . "/../includes/database.php";
-require_once __DIR__ . "/lib.php";
 require_login();
 
 $user = current_user();
@@ -10,7 +7,7 @@ express_require_access($user);
 
 $id = (int)($_GET["id"] ?? 0);
 
-$stmt = $pdo->prepare("SELECT * FROM express_orders WHERE id = ?");
+$stmt = db()->prepare("SELECT * FROM express_orders WHERE id = ?");
 $stmt->execute([$id]);
 $order = $stmt->fetch();
 
@@ -33,13 +30,13 @@ if ($order["status"] === "Collected") {
 // Collected is set only by checking the order out, not here.
 $statuses = ["Received", "Packed", "Cancelled"];
 $error = null;
-$products = express_products($pdo);
+$products = express_products();
 
 // The van rule depends on when the order was PLACED, not on the current time.
-$delivery_allowed = delivery_allowed_at($pdo, $order["created_at"]);
+$delivery_allowed = delivery_allowed_at($order["created_at"]);
 
 $lines = [];
-foreach (express_load_items($pdo, $id) as $it) {
+foreach (express_load_items($id) as $it) {
     $lines[] = ["product_id" => (int)$it["product_id"], "quantity" => (int)$it["quantity"]];
 }
 if (!$lines) {
@@ -61,7 +58,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
     if ($error === null) {
-        $items = express_items_from_post($pdo, $_POST, $error);
+        $items = express_items_from_post($_POST, $error);
     }
 
     if ($error === null) {
@@ -72,21 +69,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if ($error === null) {
 
         try {
-            $pdo->beginTransaction();
+            db()->beginTransaction();
 
             // Re-activating a cancelled order from today takes a slot again.
             $reactivating = false;
             if ($order["status"] === "Cancelled" && $status !== "Cancelled") {
-                $chk = $pdo->prepare("SELECT DATE(?) = CURDATE()");
+                $chk = db()->prepare("SELECT DATE(?) = CURDATE()");
                 $chk->execute([$order["created_at"]]);
                 $reactivating = (bool)$chk->fetchColumn();
             }
 
-            if ($reactivating && express_used_today($pdo) >= EXPRESS_DAILY_CAPACITY) {
-                $pdo->rollBack();
+            if ($reactivating && express_used_today() >= EXPRESS_DAILY_CAPACITY) {
+                db()->rollBack();
                 $error = "Daily Express capacity reached. This order can't be re-activated today.";
             } else {
-                $stmt = $pdo->prepare(
+                $stmt = db()->prepare(
                     "UPDATE express_orders
                      SET customer_name = ?,
                          phone = ?,
@@ -113,16 +110,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     $id
                 ]);
 
-                express_save_items($pdo, $id, $items);
+                express_save_items($id, $items);
 
-                $pdo->commit();
+                db()->commit();
 
                 header("Location: index.php?done=updated");
                 exit;
             }
         } catch (Throwable $e) {
-            if ($pdo->inTransaction()) {
-                $pdo->rollBack();
+            if (db()->inTransaction()) {
+                db()->rollBack();
             }
             $error = "The order could not be saved. Please try again.";
         }

@@ -1,7 +1,5 @@
 <?php
 require_once __DIR__ . '/../includes/app.php';
-require_once __DIR__ . '/../includes/database.php';
-require_once __DIR__ . '/lib.php';
 require_login();
 
 $user = current_user();
@@ -16,7 +14,7 @@ if (!$o) {
     die('Express order not found.');
 }
 
-$items       = express_load_items(db(), $id);
+$items       = express_load_items($id);
 $is_delivery = ($o['delivery_method'] === 'Delivery');
 $t           = express_totals((float)$o['order_subtotal'], (float)$o['delivery_fee']);
 

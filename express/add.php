@@ -1,8 +1,6 @@
 <?php
+require_once __DIR__ . '/../includes/app.php';
 
-require_once __DIR__ . "/../includes/app.php";
-require_once __DIR__ . "/../includes/database.php";
-require_once __DIR__ . "/lib.php";
 require_login();
 
 $user = current_user();
@@ -69,7 +67,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     $user["username"]
                 ]);
 
-                express_save_items(db(), (int)db()->lastInsertId(), $items);
+                express_save_items((int)db()->lastInsertId(), $items);
 
                 db()->commit();
 
@@ -77,11 +75,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 exit;
             }
         } catch (Throwable $e) {
-            if (db()->inTransaction()) {
-                db()->rollBack();
-            }
-            $error = "The order could not be saved. Please try again.";
-        }
+    if (db()->inTransaction()) {
+        db()->rollBack();
+    }
+    error_log($e->getMessage());
+    $error = "DEBUG: " . $e->getMessage();   // remove after fixing
+}
     }
 }
 

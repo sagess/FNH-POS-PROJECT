@@ -1,8 +1,6 @@
 <?php
-
-require_once __DIR__ . "/../includes/app.php";
-require_once __DIR__ . "/../includes/database.php";
-require_once __DIR__ . "/lib.php";
+require_once __DIR__ . '/../includes/app.php';
+//require_once __DIR__ . "/lib.php";
 require_login();
 
 $user = current_user();

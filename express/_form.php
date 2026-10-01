@@ -2,6 +2,13 @@
 // Shared fields for add.php and edit.php.
 // Expects: $order, $lines, $products, $delivery_allowed
 //          $statuses (edit only; leave unset on add).
+/**
+ * @var array      $order
+ * @var array      $lines
+ * @var array      $products
+ * @var bool       $delivery_allowed
+ * @var array|null $statuses
+ */
 ?>
 <div class="form-group">
     <label>Customer Name</label>
