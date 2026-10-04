@@ -1,11 +1,12 @@
 <?php
 
+// Database configuration constants
 function validate_role(string $role): string
 {
     return in_array($role, ['admin', 'operator'], true) ? '' : 'Invalid role.';
 }
 
-
+// Returns an array of users, optionally filtered by role.
 function list_users(?string $role = null): array
 {
     $sql = 'SELECT user_id, username, full_name, email, role, is_active, created_at FROM users';
@@ -21,6 +22,8 @@ function list_users(?string $role = null): array
     return $stmt->fetchAll();
 }
 
+
+// Creates a new user and returns an array with the result.
 function create_user(
     string $username,
     string $password,
@@ -74,7 +77,7 @@ function create_user(
     }
 }
 
-
+// Checks if a username already exists in the database.
 function username_exists(string $username): bool
 {
     $username = strtolower(trim($username));
@@ -86,7 +89,7 @@ function username_exists(string $username): bool
 }
 
 
-
+// Validates the username according to specified rules.
 function validate_username(string $username): string
 {
     $username = trim($username);
@@ -102,6 +105,7 @@ function validate_username(string $username): string
     return '';
 }
 
+// Validates the full name according to specified rules.
 function validate_full_name(string $full_name): string
 {
     $full_name = trim($full_name);
@@ -114,6 +118,7 @@ function validate_full_name(string $full_name): string
     return '';
 }
 
+// Validates the password according to specified rules.
 function validate_password(string $password): string
 {
     if ($password === '') {
@@ -125,7 +130,7 @@ function validate_password(string $password): string
     return '';
 }
 
-
+// Deletes a user from the database, ensuring that the last active admin cannot be deleted.
 function delete_user(int $user_id, int $acting_user_id): array
 {
     $target = get_user($user_id);
@@ -138,10 +143,10 @@ function delete_user(int $user_id, int $acting_user_id): array
 
     $is_active_admin = ($target['role'] === 'admin' && (int)$target['is_active'] === 1);
 
-    // Obtain the global PDO connection object
+    // Use PDO for database operations
     $pdo = db();
 
-    // Start transaction using PDO
+    // Begin PDO Transaction
     $pdo->beginTransaction();
     try {
         if ($is_active_admin && count_active_admins(true) <= 1) {
@@ -167,6 +172,7 @@ function delete_user(int $user_id, int $acting_user_id): array
 }
 
 
+// Retrieves a user's details by their user ID. Returns null if the user does not exist.
 function get_user(int $user_id): ?array
 {
     $stmt = db()->prepare('SELECT user_id, username, full_name, email, role, is_active, created_at FROM users WHERE user_id = ?');
@@ -176,6 +182,8 @@ function get_user(int $user_id): ?array
     return $user ?: null;
 }
 
+
+// Counts the number of active admin users in the database. Optionally excludes system roles.
 function count_active_admins(bool $exclude_system_roles = true): int
 {
     $sql = "SELECT COUNT(*) FROM users WHERE role = 'admin' AND is_active = 1";
@@ -187,6 +195,7 @@ function count_active_admins(bool $exclude_system_roles = true): int
 }
 
 
+// Updates a user's details, including optional password change, and returns the result.
 function update_user(
     int $user_id,
     int $acting_user_id,
@@ -269,6 +278,7 @@ function update_user(
     return ['ok' => true, 'errors' => []];
 }
 
+// Checks if an email exists in the database, excluding a specific user ID.
 function email_exists_excluding_user(string $email, int $user_id): bool
 {
     $email = strtolower(trim($email));

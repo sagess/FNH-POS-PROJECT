@@ -1,4 +1,6 @@
 <?php
+
+// Returns an array of all nav items, regardless of user role
 function all_nav_items(): array
 {
     return array(
@@ -7,11 +9,12 @@ function all_nav_items(): array
         array('label' => 'Store Stock ',     'file' => '/FnH-Groceries/stock/index.php',           'icon' => 'stock.png', 'roles' => array('admin', 'operator')),
         array('label' => 'New sale',         'file' => '/FnH-Groceries/sales/new.php',        'icon' => 'new.png',  'roles' => array('admin', 'operator')),
         array('label' => 'Operators',        'file' => '/FnH-Groceries/operators/user.php',   'icon' => 'users.png',       'roles' => array('admin')),
-        array('label' => 'Express orders', 'file' => '/FnH-Groceries/express/index.php', 'icon' => 'express.png', 'roles' => array('shopper')),
+        array('label' => 'Express orders', 'file' => '/FnH-Groceries/express/index.php', 'icon' => 'express.png', 'roles' => array('admin', 'operator')),
     );
 }
 
 
+// Returns an array of nav items that the user is allowed to see
 function nav_items_for(array $user): array
 {
     $items = array();

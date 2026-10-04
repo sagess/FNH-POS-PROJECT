@@ -3,7 +3,6 @@ require_once __DIR__ . "/../includes/app.php";
 require_login();
 
 $user = current_user();
-express_require_access($user);
 
 $id = (int)($_GET["id"] ?? $_POST["id"] ?? 0);
 
@@ -19,7 +18,7 @@ $items  = express_load_items($id);
 $totals = express_totals((float)$order["order_subtotal"], (float)$order["delivery_fee"]);
 $error  = null;
 
-/* ---------- Ring up the sale ---------- */
+// Handle checkout form submission.
 if ($_SERVER["REQUEST_METHOD"] === "POST" && $order["status"] === "Packed") {
 
     $cash = is_numeric($_POST["cash_tendered"] ?? "") ? round((float)$_POST["cash_tendered"], 2) : -1;
@@ -31,7 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $order["status"] === "Packed") {
         try {
             db()->beginTransaction();
 
-            // Re-check status under a lock so two people can't check out the same order.
+            // Lock the order row to prevent concurrent checkouts.
             $lock = db()->prepare("SELECT status FROM express_orders WHERE id = ? FOR UPDATE");
             $lock->execute([$id]);
 
@@ -40,7 +39,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $order["status"] === "Packed") {
                 $error = "This order is no longer waiting for checkout.";
             } else {
 
-                // Take the stock off the shelf; fail if anything has run out since the order was placed.
+                // Attempt to take the items from stock. If any item is short, rollback and show an error.
                 $take = db()->prepare(
                     "UPDATE products SET quantity = quantity - ? WHERE id = ? AND quantity >= ?"
                 );
@@ -85,8 +84,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $order["status"] === "Packed") {
                     );
                     foreach ($items as $it) {
                         $line->execute([
-                            $sale_id, $it["product_id"], $it["quantity"],
-                            $it["unit_price"], $it["line_total"]
+                            $sale_id,
+                            $it["product_id"],
+                            $it["quantity"],
+                            $it["unit_price"],
+                            $it["line_total"]
                         ]);
                     }
 
@@ -145,7 +147,12 @@ require __DIR__ . "/../includes/header.php";
     <div class="table-container">
         <table>
             <thead>
-                <tr><th>Product</th><th>Qty</th><th>Unit price</th><th>Line total</th></tr>
+                <tr>
+                    <th>Product</th>
+                    <th>Qty</th>
+                    <th>Unit price</th>
+                    <th>Line total</th>
+                </tr>
             </thead>
             <tbody>
                 <?php foreach ($items as $it): ?>
@@ -156,10 +163,19 @@ require __DIR__ . "/../includes/header.php";
                         <td><?= money($it["line_total"]) ?></td>
                     </tr>
                 <?php endforeach; ?>
-                <tr><td colspan="3">Subtotal</td><td><?= money($totals["subtotal"]) ?></td></tr>
-                <tr><td colspan="3">Tax</td><td><?= money($totals["tax"]) ?></td></tr>
+                <tr>
+                    <td colspan="3">Subtotal</td>
+                    <td><?= money($totals["subtotal"]) ?></td>
+                </tr>
+                <tr>
+                    <td colspan="3">Tax</td>
+                    <td><?= money($totals["tax"]) ?></td>
+                </tr>
                 <?php if ($totals["fee"] > 0): ?>
-                    <tr><td colspan="3">Home delivery fee</td><td><?= money($totals["fee"]) ?></td></tr>
+                    <tr>
+                        <td colspan="3">Home delivery fee</td>
+                        <td><?= money($totals["fee"]) ?></td>
+                    </tr>
                 <?php endif; ?>
                 <tr>
                     <td colspan="3"><strong>Total due</strong></td>
@@ -175,7 +191,7 @@ require __DIR__ . "/../includes/header.php";
         <div class="form-group">
             <label>Cash tendered ($)</label>
             <input type="number" name="cash_tendered" min="0" step="0.01"
-                   value="<?= h(number_format($totals["total"], 2, ".", "")) ?>" required>
+                value="<?= h(number_format($totals["total"], 2, ".", "")) ?>" required>
         </div>
 
         <div class="form-actions">

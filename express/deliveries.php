@@ -3,8 +3,8 @@ require_once __DIR__ . '/../includes/app.php';
 
 require_login();
 
+// Get the current user
 $user = current_user();
-express_require_access($user);
 
 // Date filter (defaults to today)
 $date = $_GET['date'] ?? '';

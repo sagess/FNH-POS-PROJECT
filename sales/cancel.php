@@ -1,4 +1,6 @@
 <?php
+
+//includes/app.php is required to access the database and session functions
 require_once __DIR__ . '/../includes/app.php';
 require_login();
 
@@ -9,6 +11,8 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 
 $sale_id = (int)($_POST["sale_id"] ?? 0);
 
+
+// Confirms the sale exists, belongs to this operator, and is still OPEN.
 $sale = require_sale($sale_id, 'new.php', 'OPEN');
 
 try {

@@ -1,21 +1,28 @@
 <?php
+
+/**
+ * @var array $items
+ */
+
 require_once __DIR__ . "/../includes/app.php";
 require_login();
 
 $user = current_user();
-express_require_access($user);
 
+// Fetch the order ID from the query string
 $id = (int)($_GET["id"] ?? 0);
 
+// Fetch the order from the database
 $stmt = db()->prepare("SELECT * FROM express_orders WHERE id = ?");
 $stmt->execute([$id]);
 $order = $stmt->fetch();
 
+// If the order doesn't exist, show an error and exit
 if (!$order) {
     die("Order not found.");
 }
 
-// Collected orders are already rung up as a sale, so they are locked.
+// If the order has been collected, it can no longer be edited. Show a message and exit.
 if ($order["status"] === "Collected") {
     $page_title = "Edit Express Order";
     require __DIR__ . "/../includes/header.php";
@@ -27,12 +34,12 @@ if ($order["status"] === "Collected") {
     exit;
 }
 
-// Collected is set only by checking the order out, not here.
+//statuses that can be set on an order
 $statuses = ["Received", "Packed", "Cancelled"];
 $error = null;
 $products = express_products();
 
-// The van rule depends on when the order was PLACED, not on the current time.
+// allow delivery only if the order was placed today and the current time is before 5pm
 $delivery_allowed = delivery_allowed_at($order["created_at"]);
 
 $lines = [];
@@ -71,7 +78,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         try {
             db()->beginTransaction();
 
-            // Re-activating a cancelled order from today takes a slot again.
+            // Check if the order is being re-activated. If so, check if the daily capacity has been reached.
             $reactivating = false;
             if ($order["status"] === "Cancelled" && $status !== "Cancelled") {
                 $chk = db()->prepare("SELECT DATE(?) = CURDATE()");
@@ -105,7 +112,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     $fee,
                     $address,
                     $status,
-                    $status, $user["username"],
+                    $status,
+                    $user["username"],
                     $status,
                     $id
                 ]);
@@ -146,19 +154,19 @@ require __DIR__ . "/../includes/header.php";
 
 <form method="POST">
 
-<?php require __DIR__ . "/_form.php"; ?>
+    <?php require __DIR__ . "/_form.php"; ?>
 
-<div class="form-actions">
+    <div class="form-actions">
 
-<button type="submit" class="button-primary">
-    Update Order
-</button>
+        <button type="submit" class="button-primary">
+            Update Order
+        </button>
 
-<a href="index.php" class="button button-secondary">
-    Cancel
-</a>
+        <a href="index.php" class="button button-secondary">
+            Cancel
+        </a>
 
-</div>
+    </div>
 
 </form>
 

@@ -1,4 +1,6 @@
 <?php
+
+// Include necessary files and ensure the user is logged in
 require_once __DIR__ . '/../includes/app.php';
 require_login();
 
@@ -15,7 +17,7 @@ require __DIR__ . '/../includes/header.php';
     <a
         href="add.php"
         class="button button-primary">
-       ➕ Add Product
+        ➕ Add Product
     </a>
 
 </div>
@@ -37,7 +39,7 @@ require __DIR__ . '/../includes/header.php';
                 <th>Department</th>
                 <th>Price</th>
                 <th>Quantity</th>
-               <!-- <th>Actions</th>-->
+                <!-- <th>Actions</th>-->
 
             </tr>
 
@@ -82,13 +84,13 @@ require __DIR__ . '/../includes/header.php';
                         <!--<div class="actions">
 
                             <a
-                                href="edit.php?id=<?= $product["id"] ?>"
+                                href="edit.php?id=</?= $product["id"] ?>"
                                 class="button button-secondary">
                                 Edit
                             </a>
 
                             <a
-                                href="delete.php?id=<?= $product["id"] ?>"
+                                href="delete.php?id=</?= $product["id"] ?>"
                                 class="button button-danger"
                                 onclick="return confirm('Delete this product?');">
                                 Delete

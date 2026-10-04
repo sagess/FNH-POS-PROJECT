@@ -1,4 +1,6 @@
 <?php
+
+//includes/app.php is already included in index.php, so no need to include it again here
 require_once __DIR__ . '/../includes/app.php';
 require_login();
 
@@ -6,6 +8,8 @@ $products = view_products_by_department();
 $totalStock = number_of_stock();
 
 $page_title = 'Stock';
+
+//includes/header.php is already included in index.php, so no need to include it again here
 require __DIR__ . '/../includes/header.php';
 ?>
 <h1>Store Stock</h1>

@@ -7,9 +7,8 @@
         Developer: SAGESSE JOSEPH
     </div>
 
-    <a href="/FnH-Groceries/feedback.php">
-        Send Feedback to Developer
-    </a>
+    <a href="mailto:<?= FEEDBACK_EMAIL; ?>">Send Feedback to Developer</a>
+
 
 </footer>
 

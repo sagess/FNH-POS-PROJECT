@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 28, 2026 at 03:17 AM
+-- Generation Time: Oct 04, 2026 at 09:25 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -53,11 +53,8 @@ INSERT INTO `categories` (`id`, `name`, `description`) VALUES
 
 CREATE TABLE `customer` (
   `customer_id` int(11) NOT NULL,
-  `first_name` varchar(50) NOT NULL,
-  `email` varchar(100) NOT NULL,
-  `phone_number` varchar(20) NOT NULL,
-  `city` varchar(50) NOT NULL,
-  `zip_code` varchar(20) NOT NULL
+  `full_name` varchar(80) NOT NULL,
+  `phone_number` varchar(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -87,28 +84,42 @@ INSERT INTO `departments` (`id`, `name`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `feedback`
+-- Table structure for table `express_orders`
 --
 
-CREATE TABLE `feedback` (
+CREATE TABLE `express_orders` (
   `id` int(11) NOT NULL,
-  `name` varchar(100) NOT NULL,
-  `email` varchar(150) NOT NULL,
-  `message` text NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `customer_name` varchar(100) NOT NULL,
+  `phone` varchar(30) DEFAULT NULL,
+  `order_ref` varchar(50) DEFAULT NULL,
+  `order_subtotal` decimal(8,2) NOT NULL DEFAULT 0.00,
+  `delivery_method` enum('Curbside','Delivery') NOT NULL DEFAULT 'Curbside',
+  `delivery_fee` decimal(6,2) NOT NULL DEFAULT 0.00,
+  `delivery_address` varchar(255) DEFAULT NULL,
+  `status` enum('Received','Packed','Collected','Cancelled') NOT NULL DEFAULT 'Received',
+  `received_by` varchar(50) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `register_id` int(11) DEFAULT NULL,
+  `collected_by` varchar(50) DEFAULT NULL,
+  `collected_at` datetime DEFAULT NULL,
+  `packed_by` varchar(50) DEFAULT NULL,
+  `packed_at` datetime DEFAULT NULL,
+  `sale_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `orders`
+-- Table structure for table `express_order_items`
 --
 
-CREATE TABLE `orders` (
+CREATE TABLE `express_order_items` (
   `id` int(11) NOT NULL,
-  `customer_id` int(11) DEFAULT NULL,
-  `order_date` timestamp NOT NULL DEFAULT current_timestamp(),
-  `status` varchar(50) DEFAULT 'Pending'
+  `express_order_id` int(11) NOT NULL,
+  `product_id` int(11) NOT NULL,
+  `quantity` int(11) NOT NULL,
+  `unit_price` decimal(8,2) NOT NULL,
+  `line_total` decimal(8,2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -132,9 +143,9 @@ CREATE TABLE `products` (
 --
 
 INSERT INTO `products` (`id`, `product_code`, `name`, `category_id`, `department_id`, `price`, `quantity`) VALUES
-(1, '1234567', 'Adware', 7, 6, 32.00, 226),
-(3, '12345670', 'voting system', 4, 3, 89.00, 220),
-(6, '123456700', 'ded', 1, 2, 5.00, 45),
+(1, '1234567', 'Adware', 7, 6, 32.00, 214),
+(3, '12345670', 'voting system', 4, 3, 89.00, 217),
+(6, '123456700', 'ded', 1, 2, 5.00, 40),
 (7, '5555555', 'ded', 1, 6, 5.00, 28);
 
 -- --------------------------------------------------------
@@ -147,8 +158,17 @@ CREATE TABLE `register` (
   `register_id` int(11) NOT NULL,
   `store_id` int(11) NOT NULL,
   `register_number` varchar(20) NOT NULL,
-  `status` enum('Active','Maintenance','Inactive') NOT NULL DEFAULT 'Active'
+  `status` enum('Active','Maintenance','Inactive') NOT NULL DEFAULT 'Active',
+  `is_express` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `register`
+--
+
+INSERT INTO `register` (`register_id`, `store_id`, `register_number`, `status`, `is_express`) VALUES
+(4, 1, '1', 'Active', 1),
+(5, 1, '2', 'Inactive', 0);
 
 -- --------------------------------------------------------
 
@@ -159,43 +179,18 @@ CREATE TABLE `register` (
 CREATE TABLE `sales` (
   `id` int(11) NOT NULL,
   `operator_id` int(10) UNSIGNED NOT NULL,
+  `register_id` int(11) DEFAULT NULL,
   `started_at` datetime NOT NULL,
   `checkout_at` datetime DEFAULT NULL,
   `subtotal` decimal(10,2) NOT NULL DEFAULT 0.00,
   `tax` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `delivery_fee` decimal(6,2) NOT NULL DEFAULT 0.00,
   `total` decimal(10,2) NOT NULL DEFAULT 0.00,
   `cash_tendered` decimal(10,2) DEFAULT NULL,
   `change_due` decimal(10,2) DEFAULT NULL,
   `status` enum('OPEN','COMPLETED','CANCELLED') NOT NULL DEFAULT 'OPEN',
   `cancelled_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `sales`
---
-
-INSERT INTO `sales` (`id`, `operator_id`, `started_at`, `checkout_at`, `subtotal`, `tax`, `total`, `cash_tendered`, `change_due`, `status`, `cancelled_at`) VALUES
-(4, 1, '2026-09-27 12:05:11', NULL, 0.00, 0.00, 0.00, NULL, NULL, 'OPEN', NULL),
-(5, 1, '2026-09-27 12:34:07', '2026-09-27 13:52:26', 302.00, 23.41, 325.41, 330.00, 4.59, 'COMPLETED', NULL),
-(6, 1, '2026-09-27 13:57:50', NULL, 0.00, 0.00, 0.00, NULL, NULL, 'OPEN', NULL),
-(7, 1, '2026-09-27 13:58:24', NULL, 0.00, 0.00, 0.00, NULL, NULL, 'OPEN', NULL),
-(8, 1, '2026-09-27 13:59:54', NULL, 0.00, 0.00, 0.00, NULL, NULL, 'CANCELLED', '2026-09-27 14:07:35'),
-(9, 1, '2026-09-27 14:07:38', NULL, 0.00, 0.00, 0.00, NULL, NULL, 'CANCELLED', '2026-09-27 14:07:51'),
-(10, 1, '2026-09-27 14:07:54', '2026-09-27 14:08:53', 5.00, 0.39, 5.39, 6.00, 0.61, 'COMPLETED', NULL),
-(11, 1, '2026-09-27 14:09:10', '2026-09-27 14:09:25', 32.00, 2.48, 34.48, 35.00, 0.52, 'COMPLETED', NULL),
-(12, 1, '2026-09-27 14:33:44', NULL, 0.00, 0.00, 0.00, NULL, NULL, 'OPEN', NULL),
-(13, 1, '2026-09-27 14:34:05', NULL, 0.00, 0.00, 0.00, NULL, NULL, 'OPEN', NULL),
-(14, 1, '2026-09-27 14:34:30', NULL, 0.00, 0.00, 0.00, NULL, NULL, 'OPEN', NULL),
-(15, 1, '2026-09-27 14:38:33', NULL, 0.00, 0.00, 0.00, NULL, NULL, 'OPEN', NULL),
-(16, 1, '2026-09-27 14:39:18', '2026-09-27 15:28:56', 5.00, 0.39, 5.39, 6.00, 0.61, 'COMPLETED', NULL),
-(17, 1, '2026-09-27 15:33:02', '2026-09-27 15:44:18', 42.00, 3.26, 45.26, 100.00, 54.74, 'COMPLETED', NULL),
-(18, 1, '2026-09-27 15:54:42', NULL, 0.00, 0.00, 0.00, NULL, NULL, 'CANCELLED', '2026-09-27 15:55:19'),
-(19, 1, '2026-09-27 15:55:21', NULL, 0.00, 0.00, 0.00, NULL, NULL, 'CANCELLED', '2026-09-27 15:56:00'),
-(20, 1, '2026-09-27 15:56:02', '2026-09-27 15:57:07', 10.00, 0.78, 10.78, 10.78, 0.00, 'COMPLETED', NULL),
-(21, 1, '2026-09-27 16:08:36', NULL, 0.00, 0.00, 0.00, NULL, NULL, 'CANCELLED', '2026-09-27 16:36:06'),
-(22, 1, '2026-09-27 16:36:08', '2026-09-27 16:36:55', 74.00, 5.74, 79.74, 80.00, 0.26, 'COMPLETED', NULL),
-(23, 1, '2026-09-27 19:30:39', '2026-09-27 19:31:36', 99.00, 7.67, 106.67, 107.00, 0.33, 'COMPLETED', NULL),
-(24, 1, '2026-09-27 19:31:59', '2026-09-27 19:37:32', 131.00, 10.15, 141.15, 142.00, 0.85, 'COMPLETED', NULL);
 
 -- --------------------------------------------------------
 
@@ -212,48 +207,6 @@ CREATE TABLE `sale_items` (
   `line_total` decimal(10,2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `sale_items`
---
-
-INSERT INTO `sale_items` (`id`, `sale_id`, `product_id`, `quantity`, `unit_price`, `line_total`) VALUES
-(1, 4, 3, 5, 89.00, 445.00),
-(2, 4, 1, 2, 32.00, 64.00),
-(3, 4, 7, 1, 5.00, 5.00),
-(4, 5, 7, 2, 5.00, 10.00),
-(5, 5, 3, 3, 89.00, 267.00),
-(6, 5, 6, 5, 5.00, 25.00),
-(7, 6, 3, 1, 89.00, 89.00),
-(8, 7, 7, 1, 5.00, 5.00),
-(9, 8, 7, 1, 5.00, 5.00),
-(10, 9, 3, 1, 89.00, 89.00),
-(11, 9, 7, 1, 5.00, 5.00),
-(12, 10, 7, 1, 5.00, 5.00),
-(13, 11, 1, 1, 32.00, 32.00),
-(14, 16, 7, 1, 5.00, 5.00),
-(15, 17, 7, 1, 5.00, 5.00),
-(16, 17, 6, 1, 5.00, 5.00),
-(17, 17, 1, 1, 32.00, 32.00),
-(18, 18, 6, 3, 5.00, 15.00),
-(19, 18, 7, 1, 5.00, 5.00),
-(20, 18, 3, 3, 89.00, 267.00),
-(21, 18, 1, 7, 32.00, 224.00),
-(22, 19, 6, 1, 5.00, 5.00),
-(23, 19, 7, 1, 5.00, 5.00),
-(24, 19, 3, 1, 89.00, 89.00),
-(25, 20, 7, 1, 5.00, 5.00),
-(26, 20, 6, 1, 5.00, 5.00),
-(27, 21, 3, 1, 89.00, 89.00),
-(28, 22, 6, 1, 5.00, 5.00),
-(29, 22, 1, 2, 32.00, 64.00),
-(30, 22, 7, 1, 5.00, 5.00),
-(31, 23, 7, 2, 5.00, 10.00),
-(32, 23, 3, 1, 89.00, 89.00),
-(33, 24, 7, 1, 5.00, 5.00),
-(34, 24, 6, 1, 5.00, 5.00),
-(35, 24, 3, 1, 89.00, 89.00),
-(36, 24, 1, 1, 32.00, 32.00);
-
 -- --------------------------------------------------------
 
 --
@@ -263,19 +216,16 @@ INSERT INTO `sale_items` (`id`, `sale_id`, `product_id`, `quantity`, `unit_price
 CREATE TABLE `store` (
   `store_id` int(11) NOT NULL,
   `store_name` varchar(100) NOT NULL,
-  `address` varchar(255) NOT NULL,
-  `city` varchar(100) NOT NULL,
-  `state` varchar(50) NOT NULL,
-  `zip_code` varchar(20) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `location` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `store`
 --
 
-INSERT INTO `store` (`store_id`, `store_name`, `address`, `city`, `state`, `zip_code`, `created_at`) VALUES
-(1, 'bld', '34 wilis street', 'Framingham', 'MA', '01702', '2026-09-22 19:35:42');
+INSERT INTO `store` (`store_id`, `store_name`, `location`) VALUES
+(1, 'Downtown Supermarket', '123 Main St, New York'),
+(2, 'Westside Mini-Mart', '456 West Ave, Los Angeles');
 
 -- --------------------------------------------------------
 
@@ -300,8 +250,7 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`user_id`, `username`, `password_hash`, `full_name`, `email`, `role`, `is_active`, `created_at`) VALUES
 (1, 'admin', '$2y$10$PJ75cU46Ys/QLfHO./H0LeOvk1FKgRrUOzQjB0lWrjVEaIOdmTZiu', 'Sandra Peter', 'petersandra@gmail.com', 'admin', 1, '2026-09-18 15:15:12'),
-(13, 'sage1994', '$2y$10$haejlMxQkD29fm8Zk7Zlu.Onl057QQz1dLUFoRulJSa2cuU/8LKn6', 'Sagesse Joseph', 'sagejoseph12@gmail.com', 'operator', 1, '2026-09-26 10:27:33'),
-(14, 'sergo123', '$2y$10$Ab3q9rFKqv6L9ds/M35Cw.g1S4kXfzTtmtidypRLkiB8FXeZmyso.', 'Sergo Jeans', 'jeanssergo234@gmail.com', 'operator', 1, '2026-09-27 20:53:28');
+(13, 'sage1994', '$2y$10$emiSeBeUKmNfBV13hnVliuNQo.qo/is02iIge42LWpeMAjRbkgEsm', 'Sagesse Joseph', 'sagejoseph12@gmail.com', 'operator', 1, '2026-09-26 10:27:33');
 
 --
 -- Indexes for dumped tables
@@ -327,17 +276,21 @@ ALTER TABLE `departments`
   ADD UNIQUE KEY `name` (`name`);
 
 --
--- Indexes for table `feedback`
+-- Indexes for table `express_orders`
 --
-ALTER TABLE `feedback`
-  ADD PRIMARY KEY (`id`);
+ALTER TABLE `express_orders`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_created` (`created_at`),
+  ADD KEY `idx_status` (`status`),
+  ADD KEY `FK_Express_Sales` (`sale_id`),
+  ADD KEY `register_id` (`register_id`);
 
 --
--- Indexes for table `orders`
+-- Indexes for table `express_order_items`
 --
-ALTER TABLE `orders`
+ALTER TABLE `express_order_items`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `customer_id` (`customer_id`);
+  ADD KEY `idx_order` (`express_order_id`);
 
 --
 -- Indexes for table `products`
@@ -360,7 +313,8 @@ ALTER TABLE `register`
 --
 ALTER TABLE `sales`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `operator_id` (`operator_id`);
+  ADD KEY `operator_id` (`operator_id`),
+  ADD KEY `FK_Sales_Register` (`register_id`);
 
 --
 -- Indexes for table `sale_items`
@@ -406,16 +360,16 @@ ALTER TABLE `departments`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
--- AUTO_INCREMENT for table `feedback`
+-- AUTO_INCREMENT for table `express_orders`
 --
-ALTER TABLE `feedback`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `express_orders`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
--- AUTO_INCREMENT for table `orders`
+-- AUTO_INCREMENT for table `express_order_items`
 --
-ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `express_order_items`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
 -- AUTO_INCREMENT for table `products`
@@ -427,25 +381,25 @@ ALTER TABLE `products`
 -- AUTO_INCREMENT for table `register`
 --
 ALTER TABLE `register`
-  MODIFY `register_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `register_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `sales`
 --
 ALTER TABLE `sales`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- AUTO_INCREMENT for table `sale_items`
 --
 ALTER TABLE `sale_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=50;
 
 --
 -- AUTO_INCREMENT for table `store`
 --
 ALTER TABLE `store`
-  MODIFY `store_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `store_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `users`
@@ -458,10 +412,17 @@ ALTER TABLE `users`
 --
 
 --
--- Constraints for table `orders`
+-- Constraints for table `express_orders`
 --
-ALTER TABLE `orders`
-  ADD CONSTRAINT `fk_orders_customer` FOREIGN KEY (`customer_id`) REFERENCES `customer` (`customer_id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `express_orders`
+  ADD CONSTRAINT `FK_Express_Sales` FOREIGN KEY (`sale_id`) REFERENCES `sales` (`id`),
+  ADD CONSTRAINT `express_orders_ibfk_1` FOREIGN KEY (`register_id`) REFERENCES `register` (`register_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `express_order_items`
+--
+ALTER TABLE `express_order_items`
+  ADD CONSTRAINT `express_order_items_ibfk_1` FOREIGN KEY (`express_order_id`) REFERENCES `express_orders` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `products`
@@ -480,6 +441,7 @@ ALTER TABLE `register`
 -- Constraints for table `sales`
 --
 ALTER TABLE `sales`
+  ADD CONSTRAINT `FK_Sales_Register` FOREIGN KEY (`register_id`) REFERENCES `register` (`register_id`),
   ADD CONSTRAINT `fk_sales_users` FOREIGN KEY (`operator_id`) REFERENCES `users` (`user_id`) ON UPDATE CASCADE;
 
 --

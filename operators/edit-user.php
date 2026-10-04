@@ -15,6 +15,7 @@ if ($user_data === null) {
 $errors = [];
 $success = '';
 
+// Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $full_name    = $_POST['full_name'] ?? '';
     $email        = $_POST['email'] ?? '';
@@ -31,16 +32,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $result = update_user($user_id, $acting_user_id, $full_name, $email, $role, $is_active, $pass_to_update);
 
         if ($result['ok']) {
-        
-        if (function_exists('redirect')) {
-            redirect('user.php');
-            exit();
-        }else {
-            $errors = $result['errors'];
-        }
+
+            if (function_exists('redirect')) {
+                redirect('user.php');
+                exit();
+            } else {
+                $errors = $result['errors'];
+            }
         }
     }
-
 }
 
 $page_title = 'Edit User';

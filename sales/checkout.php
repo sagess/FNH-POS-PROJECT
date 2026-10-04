@@ -8,8 +8,10 @@ $sale_id = (int)($_GET["sale_id"] ?? 0);
 $sale = require_sale($sale_id, 'new.php', 'OPEN');
 
 
+// Retrieve the items for this sale
 $items = list_sale_items_products($sale_id);
 
+// If there are no items in the sale, redirect back to the sale page with an error message.
 if (empty($items)) {
     flash_add('error', 'Add at least one item before checking out.');
     redirect("new.php?sale_id=$sale_id");
@@ -25,6 +27,8 @@ $tax = round($subtotal * TAX_RATE, 2);
 $total = round($subtotal + $tax, 2);
 
 $page_title = "Checkout - Sale #$sale_id";
+
+
 require __DIR__ . '/../includes/header.php';
 ?>
 

@@ -1,4 +1,6 @@
 <?php
+
+// Include the application setup and functions
 require_once __DIR__ . '/includes/app.php';
 
 if (current_user() !== null) {
@@ -16,6 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $page_title = 'Log in';
 require __DIR__ . '/includes/header.php';
 ?>
+
 <div class="login-container">
 
     <h1> 🔐 Login</h1>

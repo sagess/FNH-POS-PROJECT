@@ -34,6 +34,8 @@ if ($cash_tendered < $total) {
 
 $change = round($cash_tendered - $total, 2);
 
+
+// Update the sale record in the database to mark it as completed.
 $stmt = db()->prepare(
     "UPDATE sales
      SET checkout_at = NOW(),

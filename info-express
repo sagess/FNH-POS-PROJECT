@@ -1,8 +1,0 @@
-Configuration : sauvegardez, puis exécutez ces fichiers SQL dans l’ordre : express_orders.sql, express_delivery.sql, express_items.sql, sales_delivery_fee.sql. Ensuite, définissez EXPRESS_TAX_RATEet SALE_STATUS_COMPLETEDen haut de lib.php. La taxe est 0.00par défaut, et SALE_STATUS_COMPLETEDest une estimation.
-
-La ligne « reçu de vente » nécessite une étape supplémentaire de votre part. Votre reçu actuel ne figure pas parmi les fichiers que j'ai consultés. Les reçus express affichent les frais, mais votre reçu de caisse standard ne les affichera qu'une fois imprimé sales.delivery_feesur une ligne distincte, avec le sous-total, la taxe et les frais de livraison. Si vous m'envoyez ce fichier, je procéderai à la modification.
-
-Détails de configuration à vérifier :
-
-Rôle de personal shopper : Je ne connais pas le nom du rôle de personal shopper, donc express_require_access()il est possible d' utiliser `<nom_du_rôle> ` et ` < lib.phpnom_du_rôle >`. Si vous faites référence à un rôle appelé `<nom_du_rôle>` ou à un autre nom, veuillez modifier cette ligne.adminoperatorshopperregister
-Navigation : ajoutez ceci all_nav_items()ànavbar.php :

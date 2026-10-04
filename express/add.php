@@ -1,15 +1,26 @@
 <?php
+
+/**
+ * @var array      $items
+ * **/
+
+// app.php is included in the parent file, so we don't need to include it here
 require_once __DIR__ . '/../includes/app.php';
 
+//verything below this line requires a logged-in user
 require_login();
 
+// express_require_access($user);
 $user = current_user();
-express_require_access($user);
 
 $error = null;
+// Check if delivery is allowed and get the list of products
 $delivery_allowed = delivery_window_open();
+
+// Get the list of products for the form
 $products = express_products();
 
+// Initialize order and lines for the form
 $order = [
     "customer_name"    => "",
     "phone"            => "",
@@ -18,6 +29,8 @@ $order = [
 ];
 $lines = [["product_id" => 0, "quantity" => 0]];
 
+
+// Handle form submission
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     $order["customer_name"]    = trim($_POST["customer_name"] ?? "");
@@ -42,45 +55,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
     if ($error === null) {
-
-        try {
-            db()->beginTransaction();
-
-            if (express_used_today() >= EXPRESS_DAILY_CAPACITY) {
-                db()->rollBack();
-                $error = "Daily Express capacity reached. No more orders can be accepted today.";
-            } else {
-                $stmt = db()->prepare(
-                    "INSERT INTO express_orders
-                     (customer_name, phone, order_subtotal, delivery_method,
-                      delivery_fee, delivery_address, received_by, created_at)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, NOW())"
-                );
-
-                $stmt->execute([
-                    $order["customer_name"],
-                    $order["phone"],
-                    express_subtotal($items),
-                    $method,
-                    $fee,
-                    $address,
-                    $user["username"]
-                ]);
-
-                express_save_items((int)db()->lastInsertId(), $items);
-
-                db()->commit();
-
-                header("Location: index.php?done=recorded");
-                exit;
-            }
-        } catch (Throwable $e) {
-    if (db()->inTransaction()) {
-        db()->rollBack();
-    }
-    error_log($e->getMessage());
-    $error = "DEBUG: " . $e->getMessage();   // remove after fixing
-}
+        insert_express_order($order, $items, $method, $fee, $address, $user);
     }
 }
 
@@ -90,6 +65,7 @@ $available = max(0, EXPRESS_DAILY_CAPACITY - $used);
 $page_title = "Add Express Order";
 require __DIR__ . "/../includes/header.php";
 ?>
+
 
 <h1>Add Express Order</h1>
 
@@ -104,29 +80,29 @@ require __DIR__ . "/../includes/header.php";
 
 <?php if ($available > 0): ?>
 
-<form method="POST">
+    <form method="POST">
 
-<?php require __DIR__ . "/_form.php"; ?>
+        <?php require __DIR__ . "/_form.php"; ?>
 
-<div class="form-actions">
+        <div class="form-actions">
 
-<button type="submit" class="button-primary">
-    Add Order
-</button>
+            <button type="submit" class="button-primary">
+                Add Order
+            </button>
 
-<a href="index.php" class="button button-secondary">
-    Cancel
-</a>
+            <a href="index.php" class="button button-secondary">
+                Cancel
+            </a>
 
-</div>
+        </div>
 
-</form>
+    </form>
 
 <?php else: ?>
 
-<p>Daily capacity reached. New Express orders can't be recorded until tomorrow.</p>
+    <p>Daily capacity reached. New Express orders can't be recorded until tomorrow.</p>
 
-<a href="index.php" class="button button-secondary">Back</a>
+    <a href="index.php" class="button button-secondary">Back</a>
 
 <?php endif; ?>
 

@@ -10,10 +10,10 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 $sale_id = (int)($_POST["sale_id"] ?? 0);
 $product_code = trim($_POST["product_code"] ?? "");
 
-// Confirms the sale exists, belongs to this operator, and is still OPEN.
-// Redirects with a flash message on any failure.
+// Validate sale_id
 $sale = require_sale($sale_id, 'new.php', 'OPEN');
 
+// Validate product_code
 if ($product_code === "") {
     flash_add('error', 'Please scan or enter a product code.');
     redirect("new.php?sale_id=$sale_id");
@@ -41,7 +41,7 @@ try {
         throw new Exception("This product is out of stock.");
     }
 
-    // Reduce inventory immediately.
+    // Decrement the product quantity in the products table
     $stmt = db()->prepare(
         "UPDATE products
          SET quantity = quantity - 1
@@ -56,7 +56,7 @@ try {
     }
 
 
-    // Check whether product is already on the receipt.
+    // Check if the product is already in the sale_items table for this sale
     $stmt = db()->prepare(
         "SELECT id
          FROM sale_items

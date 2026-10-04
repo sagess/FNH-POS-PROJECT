@@ -3,7 +3,10 @@ require_once __DIR__ . '/includes/app.php';
 require_login();
 
 $user = current_user();
+
 $page_title = 'Home';
+
+//include __DIR__ . '/includes/header.php';
 require __DIR__ . '/includes/header.php';
 ?>
 <div class="card">
@@ -15,7 +18,7 @@ require __DIR__ . '/includes/header.php';
     <h1>
         Welcome,
         <strong>
-            <?php echo h($user['full_name']); ?>
+            <?= h($user['full_name']); ?>
         </strong>.
     </h1>
 

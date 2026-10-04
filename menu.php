@@ -78,23 +78,22 @@ require __DIR__ . '/includes/header.php';
 
 
         <a
-                href="express/index.php"
-                class="menu-card"
-            >
+            href="express/index.php"
+            class="menu-card">
 
-                <div class="menu-icon">
-                    🧾
-                </div>
+            <div class="menu-icon">
+                🧾
+            </div>
 
-                <h3>
-                    Orders
-                </h3>
+            <h3>
+                Orders
+            </h3>
 
-                <p>
-                    View customer orders and status.
-                </p>
+            <p>
+                Start a new order, View customer orders and status.
+            </p>
 
-            </a>
+        </a>
 
     </div>
 

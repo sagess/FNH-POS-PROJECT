@@ -12,10 +12,8 @@ if ($id > 0) {
     );
 
     $stmt->execute([$id]);
-
 }
 
 header("Location: index.php");
 
 exit;
-?>

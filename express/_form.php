@@ -1,8 +1,7 @@
 <?php
-// Shared fields for add.php and edit.php.
-// Expects: $order, $lines, $products, $delivery_allowed
-//          $statuses (edit only; leave unset on add).
+
 /**
+ * Form for creating or editing an express order
  * @var array      $order
  * @var array      $lines
  * @var array      $products
@@ -37,15 +36,17 @@
                         </option>
                     <?php endforeach; ?>
                 </select>
-
+                <br><br>
                 <input type="number" name="qty[]" min="1" placeholder="Qty"
-                       value="<?= $l['quantity'] > 0 ? (int)$l['quantity'] : '' ?>">
-
+                    value="<?= $l['quantity'] > 0 ? (int)$l['quantity'] : '' ?>">
+                <br><br>
                 <button type="button" class="button-danger" onclick="removeLine(this)">Remove</button>
+                <br><br>
             </div>
         <?php endforeach; ?>
     </div>
-
+    <hr>
+    <hr>
     <button type="button" class="button-secondary" onclick="addLine()">+ Add product</button>
 </div>
 
@@ -67,8 +68,7 @@
 
     <?php if (!$delivery_allowed): ?>
         <small>
-            Home delivery is unavailable. The van only runs for orders placed
-            between 8 AM and 4 PM, so this order is curbside pickup only.
+            <em>Home delivery is not available at this time.</em>
         </small>
     <?php endif; ?>
 </div>
@@ -94,21 +94,23 @@
 <?php endif; ?>
 
 <script>
-function addLine() {
-    var box = document.getElementById('lines');
-    var copy = box.querySelector('.line').cloneNode(true);
-    copy.querySelector('select').selectedIndex = 0;
-    copy.querySelector('input').value = '';
-    box.appendChild(copy);
-}
-function removeLine(btn) {
-    var box = document.getElementById('lines');
-    var row = btn.closest('.line');
-    if (box.querySelectorAll('.line').length > 1) {
-        row.remove();
-    } else {
-        row.querySelector('select').selectedIndex = 0;
-        row.querySelector('input').value = '';
+    // Add and remove lines of products in the order form
+    function addLine() {
+        var box = document.getElementById('lines');
+        var copy = box.querySelector('.line').cloneNode(true);
+        copy.querySelector('select').selectedIndex = 0;
+        copy.querySelector('input').value = '';
+        box.appendChild(copy);
     }
-}
+
+    function removeLine(btn) {
+        var box = document.getElementById('lines');
+        var row = btn.closest('.line');
+        if (box.querySelectorAll('.line').length > 1) {
+            row.remove();
+        } else {
+            row.querySelector('select').selectedIndex = 0;
+            row.querySelector('input').value = '';
+        }
+    }
 </script>

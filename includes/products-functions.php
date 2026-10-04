@@ -1,7 +1,9 @@
 <?php
+
+//list all products
 function list_products(): array
 {
-    // The SQL query with joins to get category and department names
+
     $sql = "SELECT 
                 p.id, 
                 p.product_code, 
@@ -26,7 +28,7 @@ function list_products(): array
     return $stmt->fetchAll();
 }
 
-
+// Retrieve all categories by description
 function check_categories(): array
 {
     $sql = "SELECT id, description FROM categories ORDER BY description";
@@ -36,6 +38,7 @@ function check_categories(): array
     return $stmt->fetchAll();
 }
 
+// Retrieve all departments by name
 function check_departments(): array
 {
     $sql = "SELECT id, name FROM departments ORDER BY name";
@@ -45,6 +48,8 @@ function check_departments(): array
     return $stmt->fetchAll();
 }
 
+
+// Check if a product code already exists in the database
 function produce_code_exists(string $product_code): bool
 {
     $username = strtolower(trim($product_code));
@@ -55,6 +60,7 @@ function produce_code_exists(string $product_code): bool
     return (int)$stmt->fetchColumn() > 0;
 }
 
+// Insert a new product into the database with validation
 function insert_products(string $product_code, string $name, int $category_id, int $department_id, float $price, int $quantity): array
 {
     // Validation

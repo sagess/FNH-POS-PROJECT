@@ -1,8 +1,11 @@
 <?php
 require_once __DIR__ . '/../includes/app.php';
+
+// Ensure the user is logged in before proceeding
 require_login();
 
 $sale_id = (int)($_GET["sale_id"] ?? 0);
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $sale_id === 0) {
     $operator_id = (int)($_SESSION['user']['user_id'] ?? 0);

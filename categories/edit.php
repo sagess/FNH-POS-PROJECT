@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../includes/app.php';
 require_login();
 
-// target category ID from the query 
+// Get the category ID from the query string
 $id = (int)($_GET['id'] ?? 0);
 $category = get_category($id);
 
@@ -18,6 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name        = $_POST['name'] ?? '';
     $description = $_POST['description'] ?? '';
 
+    // Validate the input
     $result = update_category($id, $name, $description);
 
     if ($result['ok']) {

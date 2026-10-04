@@ -1,5 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/app.php';
+
+// Check if user is logged in
 require_login();
 
 $error = '';
@@ -12,7 +14,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $result = insert_category($name, $description);
 
     if ($result['ok']) {
-        // Redirect back index.php category
+
+        // Redirect to the categories index page after successful insertion
         redirect('index.php');
         exit();
     } else {
@@ -21,6 +24,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $page_title = 'Add Category';
+
+// Include the header template
 require __DIR__ . '/../includes/header.php';
 ?>
 <h1>➕ Add New Category</h1>

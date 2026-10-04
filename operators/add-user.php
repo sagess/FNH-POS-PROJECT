@@ -8,27 +8,28 @@ $full_name = '';
 $email     = '';
 $role      = 'operator';
 
+// Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username  = $_POST['username'] ?? '';
     $password  = $_POST['password'] ?? '';
-    $confirm =$_POST['password_confirm'] ?? '';
+    $confirm = $_POST['password_confirm'] ?? '';
     $full_name = $_POST['full_name'] ?? '';
     $email     = $_POST['email'] ?? '';
     $role      = $_POST['role'] ?? 'operator';
 
     if ($password !== $confirm) {
         $errors['password_confirm'] = 'The two passwords do not match.';
-    }else{
-    $result = create_user($username, $password, $full_name, $email, $role);
-
-    if ($result['ok']) {
-        redirect('user.php?success=1');
-        exit;
     } else {
-        
-        $errors = $result['errors'];
+        $result = create_user($username, $password, $full_name, $email, $role);
+
+        if ($result['ok']) {
+            redirect('user.php?success=1');
+            exit;
+        } else {
+
+            $errors = $result['errors'];
+        }
     }
-}
 }
 
 $page_title = 'New Operator';
